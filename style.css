@@ -1,0 +1,32 @@
+body {
+  background-color: #293251;
+  font-family: "Rimouski", sans-serif;
+  color: white;
+}
+
+.weather-box {
+  background-color: rgba(255, 255, 255, 0.05);
+  padding: 30px;
+  border-radius: 10px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+}
+
+.weather-icon img {
+  max-width: 100px;
+  margin-bottom: 10px;
+}
+
+.card {
+  background-color: #f5f5f580;
+  border: none;
+}
+
+.card h4,
+.card h5,
+.card p {
+  color: #111;
+}
+.card-header {
+  background-color: #f5f5f580;
+  border-bottom: none;
+}
