@@ -1,32 +1,78 @@
+/* General Reset */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
 body {
-  background-color: #293251;
-  font-family: "Rimouski", sans-serif;
+  font-family: "Poppins", sans-serif;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  min-height: 100vh;
+  transition: background-image 0.5s ease-in-out;
+}
+
+/* Dark overlay to improve contrast on backgrounds */
+body::before {
+  content: "";
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: -1;
+}
+
+/* Navbar */
+.navbar {
+  font-weight: bold;
+  font-size: 1.2rem;
+}
+
+/* Weather Container */
+#weatherContainer {
+  padding-bottom: 40px;
+}
+
+/* Cards */
+.card {
+  background-color: rgba(255, 255, 255, 0.1);
+  color: #fff;
+  border: none;
+  transition: transform 0.3s ease;
+}
+
+.card:hover {
+  transform: scale(1.03);
+}
+
+/* Weather Icon */
+.weather-icon img {
+  width: 80px;
+  height: 80px;
+}
+
+/* Forecast cards */
+#forecastContainer .card {
+  min-width: 150px;
+  margin-bottom: 20px;
+}
+
+/* Loader */
+#loader {
   color: white;
 }
 
-.weather-box {
-  background-color: rgba(255, 255, 255, 0.05);
-  padding: 30px;
-  border-radius: 10px;
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+/* Responsive Text */
+#locationTitle {
+  font-size: 2rem;
 }
 
-.weather-icon img {
-  max-width: 100px;
-  margin-bottom: 10px;
-}
-
-.card {
-  background-color: #f5f5f580;
-  border: none;
-}
-
-.card h4,
-.card h5,
-.card p {
-  color: #111;
-}
-.card-header {
-  background-color: #f5f5f580;
-  border-bottom: none;
+@media (max-width: 576px) {
+  #locationTitle {
+    font-size: 1.5rem;
+  }
 }

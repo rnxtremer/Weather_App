@@ -1,109 +1,186 @@
-const city = document.querySelector(".city");
-const about_city = document.querySelector(".a_city");
-const targetTemperature = document.querySelector("#temp");
-const cityHumidity = document.querySelector("#Humidity");
-const feel = document.querySelector("#feel");
-const cityRegion = document.querySelector("#region");
-const windSpeed = document.querySelector("#wspeed");
-const windDirection = document.querySelector("#wdirection");
-const C_latitude = document.querySelector("#lat");
-const C_longitude = document.querySelector("#lon");
-const cityPressure = document.querySelector("#Pressure");
-const cityDate = document.querySelector("#date");
-const cityTime = document.querySelector("#time");
-const cityCountry = document.querySelector("#Country");
-const search = document.querySelector("#search_area");
-const form = document.querySelector(".d-flex");
+// app.js
 
-form.addEventListener("submit", searchForLocation);
+const apiKey = "f656f6827baa136dff1341b912506dda"; // Replace this with your OpenWeatherMap API Key
 
-let target;
+// DOM Elements
+const searchForm = document.getElementById("searchForm");
+const cityInput = document.getElementById("cityInput");
+const weatherContainer = document.getElementById("weatherContainer");
+const forecastContainer = document.getElementById("forecastContainer");
+const loader = document.getElementById("loader");
+const locationTitle = document.getElementById("locationTitle");
+const body = document.body;
 
-function searchForLocation(e) {
-  e.preventDefault();
-  target = search.value;
-  getData(target);
-}
-
-const getData = async (targetplace) => {
-  let url = `https://api.weatherapi.com/v1/current.json?key=257ec1a236b94689af3104504251405&q=${targetplace}&aqi=no`;
-
-  try {
-    
-    const response = await fetch(url);
-    const data = await response.json();
-
-    const region = data.location.region;
-    const temperature = data.current.temp_c;
-    const feelslike = data.current.feelslike_c;
-    const humidity = data.current.humidity;
-    const Wspeed = data.current.wind_kph;
-    const wdirection = data.current.wind_dir;
-    const pressure = data.current.pressure_mb;
-    const latitude = data.location.lat;
-    const longitude = data.location.lon;
-    const localTime = data.location.localtime;
-    const Country = data.location.country;
-    const condition = data.current.condition.text;
-
-    updateValues(
-      temperature,
-      feelslike,
-      humidity,
-      Wspeed,
-      wdirection,
-      pressure,
-      region,
-      latitude,
-      longitude,
-      localTime,
-      Country,
-      condition,
-      target
+// On load, get weather by geolocation
+window.onload = () => {
+  if (navigator.geolocation) {
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const { latitude, longitude } = position.coords;
+        fetchWeatherByCoords(latitude, longitude);
+      },
+      () => {
+        fetchWeatherByCity("Delhi");
+      }
     );
-  } catch (error) {
-    alert("City not found. Please check the name.");
+  } else {
+    fetchWeatherByCity("Delhi");
   }
 };
 
-const updateValues = (
-  temperature,
-  feelslike,
-  humidity,
-  Wspeed,
-  wdirection,
-  pressure,
-  region,
-  latitude,
-  longitude,
-  localTime,
-  Country,
-  condition,
-  target
-) => {
-  targetTemperature.innerText = temperature;
-  feel.innerText = feelslike;
-  cityHumidity.innerText = humidity;
-  windSpeed.innerText = Wspeed;
-  windDirection.innerText = wdirection;
-  cityRegion.innerText = region;
-  cityPressure.innerText = pressure;
-  C_latitude.innerText = latitude;
-  C_longitude.innerText = longitude;
+searchForm.addEventListener("submit", (e) => {
+  e.preventDefault();
+  const city = cityInput.value.trim();
+  if (city) {
+    fetchWeatherByCity(city);
+  }
+});
 
-  const [date, time] = localTime.split(" ");
-  cityDate.innerText = date;
-  cityTime.innerText = time;
-  cityCountry.innerText = Country;
+function fetchWeatherByCity(city) {
+  loader.style.display = "block";
+  weatherContainer.style.display = "none";
 
-  city.innerText = target;
-  about_city.innerText = target;
-};
-const updateTime = () => {
-  const now = new Date();
-  const hours = now.getHours();
-  const minutes = now.getMinutes();
-  const seconds = now.getSeconds();
+  fetch(
+    `https://api.openweathermap.org/data/2.5/weather?q=${city}&units=metric&appid=${apiKey}`
+  )
+    .then((res) => res.json())
+    .then((data) => {
+      if (data.cod === 200) {
+        fetchWeatherByCoords(data.coord.lat, data.coord.lon, city);
+      } else {
+        alert("City not found!");
+        loader.style.display = "none";
+      }
+    })
+    .catch(() => alert("Something went wrong!"));
+}
 
-  cityTime.innerText = `${hours}:${minutes}:${seconds}`;
-};
+function fetchWeatherByCoords(lat, lon, cityName = null) {
+  loader.style.display = "block";
+  weatherContainer.style.display = "none";
+
+  const currentWeatherURL = `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&units=metric&appid=${apiKey}`;
+  const forecastURL = `https://api.openweathermap.org/data/2.5/forecast?lat=${lat}&lon=${lon}&units=metric&appid=${apiKey}`;
+
+  Promise.all([fetch(currentWeatherURL), fetch(forecastURL)])
+    .then(async ([currentRes, forecastRes]) => {
+      const currentData = await currentRes.json();
+      const forecastData = await forecastRes.json();
+      updateUI(currentData, forecastData, cityName);
+    })
+    .catch(() => alert("Error fetching weather data"));
+}
+
+function updateUI(current, forecast, cityName = null) {
+  loader.style.display = "none";
+  weatherContainer.style.display = "block";
+
+  const name = cityName || current.name;
+  locationTitle.innerHTML = `Weather of <strong>${name}</strong>`;
+
+  const weatherIcon = current.weather[0].icon;
+  const temp = Math.round(current.main.temp);
+  const feelsLike = Math.round(current.main.feels_like);
+  const humidity = current.main.humidity;
+  const pressure = current.main.pressure;
+  const windSpeed = current.wind.speed;
+  const sunrise = new Date(current.sys.sunrise * 1000).toLocaleTimeString();
+  const sunset = new Date(current.sys.sunset * 1000).toLocaleTimeString();
+
+  document.getElementById("currentWeather").innerHTML = `
+    <div class="col-md-4">
+      <div class="card text-center">
+        <div class="card-header">Condition</div>
+        <div class="card-body">
+          <img src="http://openweathermap.org/img/wn/${weatherIcon}@2x.png" alt="icon" />
+          <h4>${temp}&deg;C</h4>
+          <p>Feels like: ${feelsLike}&deg;C</p>
+          <p>Humidity: ${humidity}%</p>
+          <p>Pressure: ${pressure} hPa</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-4">
+      <div class="card text-center">
+        <div class="card-header">Sun Times</div>
+        <div class="card-body">
+          <p>Sunrise: ${sunrise}</p>
+          <p>Sunset: ${sunset}</p>
+          <p>Wind Speed: ${windSpeed} km/h</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-4">
+      <div class="card text-center">
+        <div class="card-header">Location Info</div>
+        <div class="card-body">
+          <p>Latitude: ${current.coord.lat}</p>
+          <p>Longitude: ${current.coord.lon}</p>
+          <p>Country: ${current.sys.country}</p>
+        </div>
+      </div>
+    </div>
+  `;
+
+  // Update Background
+  setBackground(current.weather[0].main.toLowerCase());
+
+  // 10 Day Forecast (actually 5 days x 8 = 40 entries, 1 every 3hr)
+  forecastContainer.innerHTML = "";
+  const dailyData = {};
+  forecast.list.forEach((entry) => {
+    const date = entry.dt_txt.split(" ")[0];
+    if (!dailyData[date]) {
+      dailyData[date] = entry;
+    }
+  });
+
+  Object.keys(dailyData)
+    .slice(0, 10)
+    .forEach((date) => {
+      const dayData = dailyData[date];
+      const icon = dayData.weather[0].icon;
+      const temp = Math.round(dayData.main.temp);
+      const condition = dayData.weather[0].main;
+
+      forecastContainer.innerHTML += `
+      <div class="col-md-2">
+        <div class="card text-center">
+          <div class="card-body">
+            <p>${date}</p>
+            <img src="http://openweathermap.org/img/wn/${icon}.png" alt="icon" />
+            <h5>${temp}&deg;C</h5>
+            <p>${condition}</p>
+          </div>
+        </div>
+      </div>
+    `;
+    });
+}
+
+function setBackground(condition) {
+  let image = "";
+  switch (condition) {
+    case "clear":
+      image = "url('images/clear.jpg')";
+      break;
+    case "clouds":
+      image = "url('images/clouds.jpg')";
+      break;
+    case "rain":
+      image = "url('images/rain.jpg')";
+      break;
+    case "snow":
+      image = "url('images/snow.jpg')";
+      break;
+    case "mist":
+    case "haze":
+      image = "url('images/mist.jpg')";
+      break;
+    default:
+      image = "url('images/default.jpg')";
+  }
+  document.body.style.backgroundImage = image;
+}
