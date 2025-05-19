@@ -1,6 +1,6 @@
 // app.js
 
-const apiKey = "f656f6827baa136dff1341b912506dda"; // Replace this with your OpenWeatherMap API Key
+const apiKey = "YOUR_API_KEY"; 
 
 // DOM Elements
 const searchForm = document.getElementById("searchForm");
