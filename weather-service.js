@@ -9,12 +9,15 @@ class WeatherService {
 
   async getCurrentWeather(lat, lon) {
     try {
-      const response = await fetch(
-        `${this.baseURL}/weather?lat=${lat}&lon=${lon}&units=metric&appid=${this.apiKey}`
-      );
+      const url = `${this.baseURL}/weather?lat=${lat}&lon=${lon}&units=metric&appid=${this.apiKey}`;
+      console.log('Fetching current weather from:', url);
+      
+      const response = await fetch(url);
       
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+        const errorText = await response.text();
+        console.error('API Error Response:', errorText);
+        throw new Error(`HTTP error! status: ${response.status} - ${errorText}`);
       }
       
       return await response.json();
@@ -26,12 +29,15 @@ class WeatherService {
 
   async getForecast(lat, lon) {
     try {
-      const response = await fetch(
-        `${this.baseURL}/forecast?lat=${lat}&lon=${lon}&units=metric&appid=${this.apiKey}`
-      );
+      const url = `${this.baseURL}/forecast?lat=${lat}&lon=${lon}&units=metric&appid=${this.apiKey}`;
+      console.log('Fetching forecast from:', url);
+      
+      const response = await fetch(url);
       
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+        const errorText = await response.text();
+        console.error('API Error Response:', errorText);
+        throw new Error(`HTTP error! status: ${response.status} - ${errorText}`);
       }
       
       return await response.json();
@@ -43,15 +49,18 @@ class WeatherService {
 
   async getWeatherByCity(cityName) {
     try {
-      const response = await fetch(
-        `${this.baseURL}/weather?q=${cityName}&units=metric&appid=${this.apiKey}`
-      );
+      const url = `${this.baseURL}/weather?q=${cityName}&units=metric&appid=${this.apiKey}`;
+      console.log('Fetching weather by city from:', url);
+      
+      const response = await fetch(url);
       
       if (!response.ok) {
+        const errorText = await response.text();
+        console.error('API Error Response:', errorText);
         if (response.status === 404) {
           throw new Error('City not found. Please check the spelling and try again.');
         }
-        throw new Error(`HTTP error! status: ${response.status}`);
+        throw new Error(`HTTP error! status: ${response.status} - ${errorText}`);
       }
       
       const data = await response.json();
@@ -69,12 +78,15 @@ class WeatherService {
     if (!query || query.length < 2) return [];
     
     try {
-      const response = await fetch(
-        `${this.geocodingURL}/direct?q=${encodeURIComponent(query)}&limit=5&appid=${this.apiKey}`
-      );
+      const url = `${this.geocodingURL}/direct?q=${encodeURIComponent(query)}&limit=5&appid=${this.apiKey}`;
+      console.log('Searching cities from:', url);
+      
+      const response = await fetch(url);
       
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+        const errorText = await response.text();
+        console.error('API Error Response:', errorText);
+        throw new Error(`HTTP error! status: ${response.status} - ${errorText}`);
       }
       
       return await response.json();
