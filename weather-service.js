@@ -108,7 +108,6 @@ class WeatherService {
     if (!query || query.length < 2) return [];
     
     try {
-      // Check if API key is still placeholder
       if (this.apiKey === "YOUR_API_KEY_HERE") {
         throw new Error("Please replace 'YOUR_API_KEY_HERE' with a valid OpenWeatherMap API key. Get one free at https://openweathermap.org/api");
       }
@@ -191,5 +190,4 @@ class WeatherService {
   }
 }
 
-// Export for use in other files
 window.WeatherService = WeatherService;
