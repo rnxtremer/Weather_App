@@ -2,13 +2,24 @@
 
 class WeatherService {
   constructor() {
-    this.apiKey = "29965d5c2a1d0dec5748214fe3b83fa0";
+    // TODO: Replace this with your actual OpenWeatherMap API key
+    // Get your free API key from: https://openweathermap.org/api
+    // 1. Sign up at openweathermap.org
+    // 2. Go to API keys section in your account
+    // 3. Generate a new API key
+    // 4. Replace the key below (it may take a few minutes to activate)
+    this.apiKey = "YOUR_API_KEY_HERE";
     this.baseURL = "https://api.openweathermap.org/data/2.5";
     this.geocodingURL = "https://api.openweathermap.org/geo/1.0";
   }
 
   async getCurrentWeather(lat, lon) {
     try {
+      // Check if API key is still placeholder
+      if (this.apiKey === "YOUR_API_KEY_HERE") {
+        throw new Error("Please replace 'YOUR_API_KEY_HERE' with a valid OpenWeatherMap API key. Get one free at https://openweathermap.org/api");
+      }
+
       const url = `${this.baseURL}/weather?lat=${lat}&lon=${lon}&units=metric&appid=${this.apiKey}`;
       console.log('Fetching current weather from:', url);
       
@@ -17,6 +28,9 @@ class WeatherService {
       if (!response.ok) {
         const errorText = await response.text();
         console.error('API Error Response:', errorText);
+        if (response.status === 401) {
+          throw new Error('Invalid API key. Please check your OpenWeatherMap API key and ensure it is active.');
+        }
         throw new Error(`HTTP error! status: ${response.status} - ${errorText}`);
       }
       
@@ -29,6 +43,11 @@ class WeatherService {
 
   async getForecast(lat, lon) {
     try {
+      // Check if API key is still placeholder
+      if (this.apiKey === "YOUR_API_KEY_HERE") {
+        throw new Error("Please replace 'YOUR_API_KEY_HERE' with a valid OpenWeatherMap API key. Get one free at https://openweathermap.org/api");
+      }
+
       const url = `${this.baseURL}/forecast?lat=${lat}&lon=${lon}&units=metric&appid=${this.apiKey}`;
       console.log('Fetching forecast from:', url);
       
@@ -37,6 +56,9 @@ class WeatherService {
       if (!response.ok) {
         const errorText = await response.text();
         console.error('API Error Response:', errorText);
+        if (response.status === 401) {
+          throw new Error('Invalid API key. Please check your OpenWeatherMap API key and ensure it is active.');
+        }
         throw new Error(`HTTP error! status: ${response.status} - ${errorText}`);
       }
       
@@ -49,6 +71,11 @@ class WeatherService {
 
   async getWeatherByCity(cityName) {
     try {
+      // Check if API key is still placeholder
+      if (this.apiKey === "YOUR_API_KEY_HERE") {
+        throw new Error("Please replace 'YOUR_API_KEY_HERE' with a valid OpenWeatherMap API key. Get one free at https://openweathermap.org/api");
+      }
+
       const url = `${this.baseURL}/weather?q=${cityName}&units=metric&appid=${this.apiKey}`;
       console.log('Fetching weather by city from:', url);
       
@@ -57,6 +84,9 @@ class WeatherService {
       if (!response.ok) {
         const errorText = await response.text();
         console.error('API Error Response:', errorText);
+        if (response.status === 401) {
+          throw new Error('Invalid API key. Please check your OpenWeatherMap API key and ensure it is active.');
+        }
         if (response.status === 404) {
           throw new Error('City not found. Please check the spelling and try again.');
         }
@@ -78,6 +108,11 @@ class WeatherService {
     if (!query || query.length < 2) return [];
     
     try {
+      // Check if API key is still placeholder
+      if (this.apiKey === "YOUR_API_KEY_HERE") {
+        throw new Error("Please replace 'YOUR_API_KEY_HERE' with a valid OpenWeatherMap API key. Get one free at https://openweathermap.org/api");
+      }
+
       const url = `${this.geocodingURL}/direct?q=${encodeURIComponent(query)}&limit=5&appid=${this.apiKey}`;
       console.log('Searching cities from:', url);
       
@@ -86,6 +121,9 @@ class WeatherService {
       if (!response.ok) {
         const errorText = await response.text();
         console.error('API Error Response:', errorText);
+        if (response.status === 401) {
+          throw new Error('Invalid API key. Please check your OpenWeatherMap API key and ensure it is active.');
+        }
         throw new Error(`HTTP error! status: ${response.status} - ${errorText}`);
       }
       
