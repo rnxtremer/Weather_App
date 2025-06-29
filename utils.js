@@ -149,5 +149,4 @@ class WeatherUtils {
   }
 }
 
-// Export for use in other files
 window.WeatherUtils = WeatherUtils;
