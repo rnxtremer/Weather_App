@@ -83,74 +83,78 @@ class UIController {
     }
   }
 
-  getWeatherIconUrl(iconCode) {
-    // Use HTTPS for secure loading
-    return `https://openweathermap.org/img/wn/${iconCode}@4x.png`;
-  }
-
-  getWeatherIconUrlSmall(iconCode) {
-    // Use HTTPS for secure loading
-    return `https://openweathermap.org/img/wn/${iconCode}.png`;
-  }
-
-  getWeatherIconUrlMedium(iconCode) {
-    // Use HTTPS for secure loading
-    return `https://openweathermap.org/img/wn/${iconCode}@2x.png`;
-  }
-
-  getFallbackIcon(condition) {
-    // Bootstrap icons as fallback
+  getBootstrapWeatherIcon(condition, isDay = true) {
+    const conditionLower = condition.toLowerCase();
+    
+    // Map weather conditions to Bootstrap icons
     const iconMap = {
-      'clear': 'bi-sun-fill',
-      'clouds': 'bi-clouds-fill',
-      'rain': 'bi-cloud-rain-fill',
-      'drizzle': 'bi-cloud-drizzle-fill',
-      'thunderstorm': 'bi-cloud-lightning-fill',
-      'snow': 'bi-cloud-snow-fill',
-      'mist': 'bi-cloud-fog-fill',
-      'haze': 'bi-cloud-haze-fill',
-      'fog': 'bi-cloud-fog-fill'
+      'clear': isDay ? 'bi-sun-fill text-warning' : 'bi-moon-stars-fill text-info',
+      'clouds': 'bi-clouds-fill text-secondary',
+      'few clouds': 'bi-cloud-sun-fill text-warning',
+      'scattered clouds': 'bi-clouds text-secondary',
+      'broken clouds': 'bi-clouds-fill text-secondary',
+      'overcast clouds': 'bi-clouds-fill text-dark',
+      'rain': 'bi-cloud-rain-fill text-primary',
+      'light rain': 'bi-cloud-drizzle-fill text-primary',
+      'moderate rain': 'bi-cloud-rain-fill text-primary',
+      'heavy rain': 'bi-cloud-rain-heavy-fill text-primary',
+      'drizzle': 'bi-cloud-drizzle-fill text-info',
+      'thunderstorm': 'bi-cloud-lightning-fill text-warning',
+      'snow': 'bi-cloud-snow-fill text-light',
+      'mist': 'bi-cloud-fog-fill text-secondary',
+      'fog': 'bi-cloud-fog2-fill text-secondary',
+      'haze': 'bi-cloud-haze2-fill text-secondary',
+      'smoke': 'bi-cloud-fog-fill text-secondary',
+      'dust': 'bi-cloud-haze-fill text-warning',
+      'sand': 'bi-cloud-haze-fill text-warning',
+      'ash': 'bi-cloud-fog-fill text-dark',
+      'squall': 'bi-wind text-primary',
+      'tornado': 'bi-tornado text-danger'
     };
-    
-    return iconMap[condition.toLowerCase()] || 'bi-cloud-fill';
+
+    // Try exact match first, then partial matches
+    if (iconMap[conditionLower]) {
+      return iconMap[conditionLower];
+    }
+
+    // Partial matching for complex conditions
+    if (conditionLower.includes('rain')) return 'bi-cloud-rain-fill text-primary';
+    if (conditionLower.includes('cloud')) return 'bi-clouds-fill text-secondary';
+    if (conditionLower.includes('sun') || conditionLower.includes('clear')) {
+      return isDay ? 'bi-sun-fill text-warning' : 'bi-moon-stars-fill text-info';
+    }
+    if (conditionLower.includes('snow')) return 'bi-cloud-snow-fill text-light';
+    if (conditionLower.includes('thunder')) return 'bi-cloud-lightning-fill text-warning';
+    if (conditionLower.includes('fog') || conditionLower.includes('mist')) return 'bi-cloud-fog-fill text-secondary';
+    if (conditionLower.includes('wind')) return 'bi-wind text-primary';
+
+    // Default fallback
+    return 'bi-cloud-fill text-secondary';
   }
 
-  createWeatherIcon(iconCode, condition, size = 'large', altText = '') {
-    const iconId = `weather-icon-${Math.random().toString(36).substr(2, 9)}`;
-    const fallbackIcon = this.getFallbackIcon(condition);
+  createWeatherIcon(iconCode, condition, description, size = 'large') {
+    const isDay = iconCode && iconCode.includes('d');
+    const bootstrapIcon = this.getBootstrapWeatherIcon(condition, isDay);
     
-    let iconUrl, iconSize, bootstrapSize;
-    
+    let sizeClass = '';
     switch(size) {
       case 'small':
-        iconUrl = this.getWeatherIconUrlSmall(iconCode);
-        iconSize = '40';
-        bootstrapSize = 'fs-1';
+        sizeClass = 'fs-1'; // ~2rem
         break;
       case 'medium':
-        iconUrl = this.getWeatherIconUrlMedium(iconCode);
-        iconSize = '60';
-        bootstrapSize = 'fs-1';
+        sizeClass = 'display-4'; // ~2.5rem
         break;
       case 'large':
       default:
-        iconUrl = this.getWeatherIconUrl(iconCode);
-        iconSize = '100';
-        bootstrapSize = 'display-1';
+        sizeClass = 'display-1'; // ~5rem
         break;
     }
 
     return `
-      <div class="weather-icon-container" style="position: relative; display: inline-block;">
-        <img id="${iconId}" 
-             src="${iconUrl}" 
-             alt="${altText || condition}" 
-             width="${iconSize}" 
-             height="${iconSize}"
-             style="display: block;"
-             onerror="this.style.display='none'; this.nextElementSibling.style.display='block';" />
-        <i class="${fallbackIcon} ${bootstrapSize} text-warning" 
-           style="display: none; line-height: 1;"></i>
+      <div class="weather-icon-container d-flex justify-content-center align-items-center">
+        <i class="${bootstrapIcon} ${sizeClass}" 
+           title="${description || condition}"
+           style="filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3)); line-height: 1;"></i>
       </div>
     `;
   }
@@ -204,8 +208,8 @@ class UIController {
 
     this.elements.mainWeatherInfo.innerHTML = `
       <div class="row align-items-center">
-        <div class="col-md-6 text-center">
-          ${this.createWeatherIcon(icon, condition, 'large', description)}
+        <div class="col-md-6 text-center mb-3 mb-md-0">
+          ${this.createWeatherIcon(icon, condition, description, 'large')}
         </div>
         <div class="col-md-6 text-center">
           <div class="temperature">${temp}</div>
@@ -270,12 +274,13 @@ class UIController {
       const temp = WeatherUtils.formatTemperature(hour.main.temp, this.temperatureUnit);
       const icon = hour.weather[0].icon;
       const condition = hour.weather[0].main;
+      const description = hour.weather[0].description;
 
       return `
         <div class="col-auto">
           <div class="card hourly-forecast-card">
             <div class="hourly-time">${time}</div>
-            ${this.createWeatherIcon(icon, condition, 'small', condition)}
+            ${this.createWeatherIcon(icon, condition, description, 'small')}
             <div class="hourly-temp">${temp}</div>
             <div class="text-small opacity-75">${condition}</div>
           </div>
@@ -310,12 +315,13 @@ class UIController {
       const maxTemp = WeatherUtils.formatTemperature(Math.max(...day.temps), this.temperatureUnit);
       const icon = day.weather.icon;
       const condition = day.weather.main;
+      const description = day.weather.description;
 
       return `
         <div class="col-lg-2 col-md-4 col-sm-6">
           <div class="card forecast-card">
             <div class="forecast-day">${dayName}</div>
-            ${this.createWeatherIcon(icon, condition, 'medium', condition)}
+            ${this.createWeatherIcon(icon, condition, description, 'medium')}
             <div class="mt-2">${condition}</div>
             <div class="forecast-temps">
               <span class="temp-high">${maxTemp}</span>
