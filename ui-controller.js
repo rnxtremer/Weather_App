@@ -83,6 +83,78 @@ class UIController {
     }
   }
 
+  getWeatherIconUrl(iconCode) {
+    // Use HTTPS for secure loading
+    return `https://openweathermap.org/img/wn/${iconCode}@4x.png`;
+  }
+
+  getWeatherIconUrlSmall(iconCode) {
+    // Use HTTPS for secure loading
+    return `https://openweathermap.org/img/wn/${iconCode}.png`;
+  }
+
+  getWeatherIconUrlMedium(iconCode) {
+    // Use HTTPS for secure loading
+    return `https://openweathermap.org/img/wn/${iconCode}@2x.png`;
+  }
+
+  getFallbackIcon(condition) {
+    // Bootstrap icons as fallback
+    const iconMap = {
+      'clear': 'bi-sun-fill',
+      'clouds': 'bi-clouds-fill',
+      'rain': 'bi-cloud-rain-fill',
+      'drizzle': 'bi-cloud-drizzle-fill',
+      'thunderstorm': 'bi-cloud-lightning-fill',
+      'snow': 'bi-cloud-snow-fill',
+      'mist': 'bi-cloud-fog-fill',
+      'haze': 'bi-cloud-haze-fill',
+      'fog': 'bi-cloud-fog-fill'
+    };
+    
+    return iconMap[condition.toLowerCase()] || 'bi-cloud-fill';
+  }
+
+  createWeatherIcon(iconCode, condition, size = 'large', altText = '') {
+    const iconId = `weather-icon-${Math.random().toString(36).substr(2, 9)}`;
+    const fallbackIcon = this.getFallbackIcon(condition);
+    
+    let iconUrl, iconSize, bootstrapSize;
+    
+    switch(size) {
+      case 'small':
+        iconUrl = this.getWeatherIconUrlSmall(iconCode);
+        iconSize = '40';
+        bootstrapSize = 'fs-1';
+        break;
+      case 'medium':
+        iconUrl = this.getWeatherIconUrlMedium(iconCode);
+        iconSize = '60';
+        bootstrapSize = 'fs-1';
+        break;
+      case 'large':
+      default:
+        iconUrl = this.getWeatherIconUrl(iconCode);
+        iconSize = '100';
+        bootstrapSize = 'display-1';
+        break;
+    }
+
+    return `
+      <div class="weather-icon-container" style="position: relative; display: inline-block;">
+        <img id="${iconId}" 
+             src="${iconUrl}" 
+             alt="${altText || condition}" 
+             width="${iconSize}" 
+             height="${iconSize}"
+             style="display: block;"
+             onerror="this.style.display='none'; this.nextElementSibling.style.display='block';" />
+        <i class="${fallbackIcon} ${bootstrapSize} text-warning" 
+           style="display: none; line-height: 1;"></i>
+      </div>
+    `;
+  }
+
   updateWeatherDisplay(weatherData) {
     this.currentWeatherData = weatherData;
     const { current, forecast, cityName } = weatherData;
@@ -133,8 +205,7 @@ class UIController {
     this.elements.mainWeatherInfo.innerHTML = `
       <div class="row align-items-center">
         <div class="col-md-6 text-center">
-          <img src="http://openweathermap.org/img/wn/${icon}@4x.png" 
-               alt="${description}" class="weather-icon img-fluid" />
+          ${this.createWeatherIcon(icon, condition, 'large', description)}
         </div>
         <div class="col-md-6 text-center">
           <div class="temperature">${temp}</div>
@@ -204,8 +275,7 @@ class UIController {
         <div class="col-auto">
           <div class="card hourly-forecast-card">
             <div class="hourly-time">${time}</div>
-            <img src="http://openweathermap.org/img/wn/${icon}.png" 
-                 alt="${condition}" width="40" height="40" />
+            ${this.createWeatherIcon(icon, condition, 'small', condition)}
             <div class="hourly-temp">${temp}</div>
             <div class="text-small opacity-75">${condition}</div>
           </div>
@@ -245,8 +315,7 @@ class UIController {
         <div class="col-lg-2 col-md-4 col-sm-6">
           <div class="card forecast-card">
             <div class="forecast-day">${dayName}</div>
-            <img src="http://openweathermap.org/img/wn/${icon}@2x.png" 
-                 alt="${condition}" class="mx-auto" width="60" height="60" />
+            ${this.createWeatherIcon(icon, condition, 'medium', condition)}
             <div class="mt-2">${condition}</div>
             <div class="forecast-temps">
               <span class="temp-high">${maxTemp}</span>
