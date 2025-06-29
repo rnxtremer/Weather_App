@@ -2,7 +2,7 @@
 
 class WeatherService {
   constructor() {
-    this.apiKey = "f656f6827baa136dff1341b912506dda";
+    this.apiKey = "29965d5c2a1d0dec5748214fe3b83fa0";
     this.baseURL = "https://api.openweathermap.org/data/2.5";
     this.geocodingURL = "https://api.openweathermap.org/geo/1.0";
   }
