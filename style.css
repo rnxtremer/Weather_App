@@ -125,15 +125,19 @@ body::before {
 }
 
 /* Weather Icons */
-.weather-icon {
-  font-size: 4rem;
+.weather-icon-container {
   margin-bottom: 1rem;
 }
 
-.weather-icon img {
-  width: 100px;
-  height: 100px;
-  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.3));
+.weather-icon-img {
+  transition: transform 0.3s ease;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.1);
+  padding: 8px;
+}
+
+.weather-icon-img:hover {
+  transform: scale(1.05);
 }
 
 /* Temperature Display */
@@ -291,13 +295,9 @@ body::before {
     font-size: 3rem;
   }
   
-  .weather-icon {
-    font-size: 3rem;
-  }
-  
-  .weather-icon img {
-    width: 80px;
-    height: 80px;
+  .weather-icon-img {
+    max-width: 80px;
+    max-height: 80px;
   }
   
   .navbar .d-flex {
@@ -339,6 +339,11 @@ body::before {
   .quick-city-btn {
     font-size: 0.85rem;
     padding: 0.4rem 0.8rem;
+  }
+  
+  .weather-icon-img {
+    max-width: 60px;
+    max-height: 60px;
   }
 }
 

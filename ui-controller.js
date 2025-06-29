@@ -83,78 +83,60 @@ class UIController {
     }
   }
 
-  getBootstrapWeatherIcon(condition, isDay = true) {
-    const conditionLower = condition.toLowerCase();
-    
-    // Map weather conditions to Bootstrap icons
+  getLocalWeatherIcon(iconCode) {
+    // Map OpenWeatherMap icon codes to local icon files
     const iconMap = {
-      'clear': isDay ? 'bi-sun-fill text-warning' : 'bi-moon-stars-fill text-info',
-      'clouds': 'bi-clouds-fill text-secondary',
-      'few clouds': 'bi-cloud-sun-fill text-warning',
-      'scattered clouds': 'bi-clouds text-secondary',
-      'broken clouds': 'bi-clouds-fill text-secondary',
-      'overcast clouds': 'bi-clouds-fill text-dark',
-      'rain': 'bi-cloud-rain-fill text-primary',
-      'light rain': 'bi-cloud-drizzle-fill text-primary',
-      'moderate rain': 'bi-cloud-rain-fill text-primary',
-      'heavy rain': 'bi-cloud-rain-heavy-fill text-primary',
-      'drizzle': 'bi-cloud-drizzle-fill text-info',
-      'thunderstorm': 'bi-cloud-lightning-fill text-warning',
-      'snow': 'bi-cloud-snow-fill text-light',
-      'mist': 'bi-cloud-fog-fill text-secondary',
-      'fog': 'bi-cloud-fog2-fill text-secondary',
-      'haze': 'bi-cloud-haze2-fill text-secondary',
-      'smoke': 'bi-cloud-fog-fill text-secondary',
-      'dust': 'bi-cloud-haze-fill text-warning',
-      'sand': 'bi-cloud-haze-fill text-warning',
-      'ash': 'bi-cloud-fog-fill text-dark',
-      'squall': 'bi-wind text-primary',
-      'tornado': 'bi-tornado text-danger'
+      '01d': '01d.png', // clear sky day
+      '01n': '01n.png', // clear sky night
+      '02d': '02d.png', // few clouds day
+      '02n': '02n.png', // few clouds night
+      '03d': '03d.png', // scattered clouds day
+      '03n': '03n.png', // scattered clouds night
+      '04d': '04d.png', // broken clouds day
+      '04n': '04n.png', // broken clouds night
+      '09d': '09d.png', // shower rain day
+      '09n': '09n.png', // shower rain night
+      '10d': '10d.png', // rain day
+      '10n': '10n.png', // rain night
+      '11d': '11d.png', // thunderstorm day
+      '11n': '11n.png', // thunderstorm night
+      '13d': '13d.png', // snow day
+      '13n': '13n.png', // snow night
+      '50d': '50d.png', // mist day
+      '50n': '50n.png'  // mist night
     };
 
-    // Try exact match first, then partial matches
-    if (iconMap[conditionLower]) {
-      return iconMap[conditionLower];
-    }
-
-    // Partial matching for complex conditions
-    if (conditionLower.includes('rain')) return 'bi-cloud-rain-fill text-primary';
-    if (conditionLower.includes('cloud')) return 'bi-clouds-fill text-secondary';
-    if (conditionLower.includes('sun') || conditionLower.includes('clear')) {
-      return isDay ? 'bi-sun-fill text-warning' : 'bi-moon-stars-fill text-info';
-    }
-    if (conditionLower.includes('snow')) return 'bi-cloud-snow-fill text-light';
-    if (conditionLower.includes('thunder')) return 'bi-cloud-lightning-fill text-warning';
-    if (conditionLower.includes('fog') || conditionLower.includes('mist')) return 'bi-cloud-fog-fill text-secondary';
-    if (conditionLower.includes('wind')) return 'bi-wind text-primary';
-
-    // Default fallback
-    return 'bi-cloud-fill text-secondary';
+    // Return the local icon path or fallback to unknown icon
+    const iconFile = iconMap[iconCode] || 'unknown.png';
+    return `icons/${iconFile}`;
   }
 
   createWeatherIcon(iconCode, condition, description, size = 'large') {
-    const isDay = iconCode && iconCode.includes('d');
-    const bootstrapIcon = this.getBootstrapWeatherIcon(condition, isDay);
+    const iconPath = this.getLocalWeatherIcon(iconCode);
     
-    let sizeClass = '';
+    let iconSize = '';
     switch(size) {
       case 'small':
-        sizeClass = 'fs-1'; // ~2rem
+        iconSize = 'width="40" height="40"';
         break;
       case 'medium':
-        sizeClass = 'display-4'; // ~2.5rem
+        iconSize = 'width="60" height="60"';
         break;
       case 'large':
       default:
-        sizeClass = 'display-1'; // ~5rem
+        iconSize = 'width="100" height="100"';
         break;
     }
 
     return `
       <div class="weather-icon-container d-flex justify-content-center align-items-center">
-        <i class="${bootstrapIcon} ${sizeClass}" 
-           title="${description || condition}"
-           style="filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3)); line-height: 1;"></i>
+        <img src="${iconPath}" 
+             alt="${description || condition}" 
+             title="${description || condition}"
+             ${iconSize}
+             class="weather-icon-img"
+             style="filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.3));"
+             onerror="this.src='icons/unknown.png';" />
       </div>
     `;
   }
