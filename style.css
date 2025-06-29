@@ -201,6 +201,11 @@ body::before {
   position: relative;
 }
 
+.hourly-forecast-container .row {
+  justify-content: center;
+  padding: 0 15px;
+}
+
 .hourly-forecast-card {
   min-width: 120px;
   text-align: center;
@@ -262,6 +267,18 @@ body::before {
 .temp-low {
   opacity: 0.7;
   font-size: 1rem;
+}
+
+/* Center forecast containers */
+#forecastContainer {
+  justify-content: center;
+}
+
+#forecastContainer .col-lg-2,
+#forecastContainer .col-md-4,
+#forecastContainer .col-sm-6 {
+  display: flex;
+  justify-content: center;
 }
 
 /* Quick City Buttons */
