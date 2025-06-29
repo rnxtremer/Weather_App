@@ -50,39 +50,6 @@ class UIController {
     });
   }
 
-  showLoader() {
-    this.elements.loader.style.display = 'block';
-    this.elements.weatherContainer.style.display = 'none';
-    this.hideError();
-  }
-
-  hideLoader() {
-    this.elements.loader.style.display = 'none';
-  }
-
-  showError(message) {
-    this.elements.errorMessage.textContent = message;
-    this.elements.errorAlert.style.display = 'block';
-    this.elements.errorAlert.classList.add('show');
-    this.hideLoader();
-  }
-
-  hideError() {
-    this.elements.errorAlert.style.display = 'none';
-    this.elements.errorAlert.classList.remove('show');
-  }
-
-  toggleTemperatureUnit() {
-    this.temperatureUnit = this.temperatureUnit === 'C' ? 'F' : 'C';
-    this.speedUnit = this.temperatureUnit === 'C' ? 'kmh' : 'mph';
-    this.elements.unitToggle.textContent = `°${this.temperatureUnit}`;
-    
-    // Re-render weather data with new units if data exists
-    if (this.currentWeatherData) {
-      this.updateWeatherDisplay(this.currentWeatherData);
-    }
-  }
-
   getLocalWeatherIcon(iconCode) {
     // Map OpenWeatherMap icon codes to local icon files
     const iconMap = {
@@ -115,30 +82,63 @@ class UIController {
     const iconPath = this.getLocalWeatherIcon(iconCode);
     
     let iconSize = '';
+    let cssClass = 'weather-icon-img';
+    
     switch(size) {
       case 'small':
         iconSize = 'width="40" height="40"';
+        cssClass += ' weather-icon-small';
         break;
       case 'medium':
         iconSize = 'width="60" height="60"';
+        cssClass += ' weather-icon-medium';
         break;
       case 'large':
       default:
         iconSize = 'width="100" height="100"';
+        cssClass += ' weather-icon-large';
         break;
     }
 
-    return `
-      <div class="weather-icon-container d-flex justify-content-center align-items-center">
-        <img src="${iconPath}" 
-             alt="${description || condition}" 
-             title="${description || condition}"
-             ${iconSize}
-             class="weather-icon-img"
-             style="filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.3));"
-             onerror="this.src='icons/unknown.png';" />
-      </div>
-    `;
+    return `<img src="${iconPath}" 
+                 alt="${description || condition}" 
+                 title="${description || condition}"
+                 ${iconSize}
+                 class="${cssClass}"
+                 onerror="this.src='icons/unknown.png'; console.log('Failed to load icon: ${iconPath}');" />`;
+  }
+
+  showLoader() {
+    this.elements.loader.style.display = 'block';
+    this.elements.weatherContainer.style.display = 'none';
+    this.hideError();
+  }
+
+  hideLoader() {
+    this.elements.loader.style.display = 'none';
+  }
+
+  showError(message) {
+    this.elements.errorMessage.textContent = message;
+    this.elements.errorAlert.style.display = 'block';
+    this.elements.errorAlert.classList.add('show');
+    this.hideLoader();
+  }
+
+  hideError() {
+    this.elements.errorAlert.style.display = 'none';
+    this.elements.errorAlert.classList.remove('show');
+  }
+
+  toggleTemperatureUnit() {
+    this.temperatureUnit = this.temperatureUnit === 'C' ? 'F' : 'C';
+    this.speedUnit = this.temperatureUnit === 'C' ? 'kmh' : 'mph';
+    this.elements.unitToggle.textContent = `°${this.temperatureUnit}`;
+    
+    // Re-render weather data with new units if data exists
+    if (this.currentWeatherData) {
+      this.updateWeatherDisplay(this.currentWeatherData);
+    }
   }
 
   updateWeatherDisplay(weatherData) {
@@ -188,10 +188,14 @@ class UIController {
     const description = current.weather[0].description;
     const icon = current.weather[0].icon;
 
+    console.log('Main weather icon code:', icon); // Debug log
+
     this.elements.mainWeatherInfo.innerHTML = `
       <div class="row align-items-center">
         <div class="col-md-6 text-center mb-3 mb-md-0">
-          ${this.createWeatherIcon(icon, condition, description, 'large')}
+          <div class="weather-icon-container">
+            ${this.createWeatherIcon(icon, condition, description, 'large')}
+          </div>
         </div>
         <div class="col-md-6 text-center">
           <div class="temperature">${temp}</div>
@@ -258,11 +262,15 @@ class UIController {
       const condition = hour.weather[0].main;
       const description = hour.weather[0].description;
 
+      console.log('Hourly forecast icon code:', icon); // Debug log
+
       return `
         <div class="col-auto">
           <div class="card hourly-forecast-card">
             <div class="hourly-time">${time}</div>
-            ${this.createWeatherIcon(icon, condition, description, 'small')}
+            <div class="text-center mb-2">
+              ${this.createWeatherIcon(icon, condition, description, 'small')}
+            </div>
             <div class="hourly-temp">${temp}</div>
             <div class="text-small opacity-75">${condition}</div>
           </div>
@@ -299,11 +307,15 @@ class UIController {
       const condition = day.weather.main;
       const description = day.weather.description;
 
+      console.log('Daily forecast icon code:', icon); // Debug log
+
       return `
         <div class="col-lg-2 col-md-4 col-sm-6">
           <div class="card forecast-card">
             <div class="forecast-day">${dayName}</div>
-            ${this.createWeatherIcon(icon, condition, description, 'medium')}
+            <div class="text-center mb-2">
+              ${this.createWeatherIcon(icon, condition, description, 'medium')}
+            </div>
             <div class="mt-2">${condition}</div>
             <div class="forecast-temps">
               <span class="temp-high">${maxTemp}</span>
