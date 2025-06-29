@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Simple Weather App</title>
+    <title>Mausam - Weather App</title>
 
     <!-- Bootstrap CSS -->
     <link
@@ -17,22 +17,22 @@
     />
     <!-- Google Fonts -->
     <link
-      href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
       rel="stylesheet"
     />
     <!-- Custom CSS -->
     <link rel="stylesheet" href="style.css" />
   </head>
   <body>
-    <!-- Simple Navbar -->
-    <nav class="navbar navbar-expand-lg p-3 shadow">
+    <!-- Navbar -->
+    <nav class="navbar navbar-dark bg-dark p-3 shadow-lg">
       <div class="container-fluid">
         <div class="d-flex align-items-center">
-          <i class="bi bi-sun-fill text-warning me-2 fs-2"></i>
-          <span class="navbar-brand mb-0 h1">Simple Weather</span>
+          <i class="bi bi-cloud-sun-fill text-warning me-2 fs-3"></i>
+          <span class="navbar-brand mb-0 h1">Mausam</span>
         </div>
         <div class="d-flex align-items-center">
-          <button class="btn btn-outline-light me-3" id="unitToggle" title="Change Temperature Unit">
+          <button class="btn btn-outline-light me-3" id="unitToggle" title="Toggle Temperature Unit">
             °C
           </button>
           <form class="d-flex" role="search" id="searchForm">
@@ -41,10 +41,10 @@
                 class="form-control"
                 type="search"
                 id="cityInput"
-                placeholder="Type city name here..."
+                placeholder="Enter city name..."
                 autocomplete="off"
               />
-              <button class="btn btn-outline-light" type="submit" title="Search Weather">
+              <button class="btn btn-outline-light" type="submit">
                 <i class="bi bi-search"></i>
               </button>
             </div>
@@ -58,7 +58,7 @@
       <div id="searchSuggestions" class="search-suggestions"></div>
     </div>
 
-    <!-- Error Message -->
+    <!-- Error Alert -->
     <div class="container mt-3">
       <div id="errorAlert" class="alert alert-danger alert-dismissible fade" role="alert" style="display: none;">
         <i class="bi bi-exclamation-triangle-fill me-2"></i>
@@ -67,10 +67,10 @@
       </div>
     </div>
 
-    <!-- Loading Message -->
+    <!-- Loader -->
     <div id="loader" class="text-center mt-5" style="display: none">
-      <div class="spinner-border" role="status" style="width: 4rem; height: 4rem;"></div>
-      <p class="text-white mt-3 fs-4">Getting weather information...</p>
+      <div class="spinner-border text-light" role="status" style="width: 3rem; height: 3rem;"></div>
+      <p class="text-white mt-3 fs-5">Fetching weather data...</p>
     </div>
 
     <!-- Main Weather Display -->
@@ -80,16 +80,15 @@
       style="display: none"
     >
       <!-- Location and Time -->
-      <div class="text-center mb-5">
-        <h1 id="locationTitle" class="mb-3">Weather Information</h1>
-        <p id="currentDateTime" class="fs-4"></p>
+      <div class="text-center mb-4">
+        <h2 id="locationTitle" class="mb-2">Weather of</h2>
+        <p id="currentDateTime" class="text-light opacity-75 fs-5"></p>
       </div>
 
-      <!-- Current Weather - Main Display -->
-      <div class="row justify-content-center mb-5">
-        <div class="col-lg-10">
+      <!-- Current Weather Highlight -->
+      <div class="row justify-content-center mb-4">
+        <div class="col-lg-8">
           <div class="card weather-highlight text-center p-4">
-            <h3 class="mb-4" style="color: #4682B4;">Current Weather</h3>
             <div id="mainWeatherInfo">
               <!-- Main weather info will be inserted here -->
             </div>
@@ -97,20 +96,15 @@
         </div>
       </div>
 
-      <!-- Weather Details -->
-      <div class="mb-5">
-        <h4 class="text-center mb-4">
-          <i class="bi bi-info-circle me-2"></i>Weather Details
-        </h4>
-        <div class="row g-3" id="weatherDetails">
-          <!-- Weather detail cards will be added dynamically here -->
-        </div>
+      <!-- Weather Details Grid -->
+      <div class="row g-3 mb-4" id="weatherDetails">
+        <!-- Weather detail cards will be added dynamically here -->
       </div>
 
-      <!-- Next 24 Hours -->
-      <div class="mb-5">
-        <h4 class="text-center mb-4">
-          <i class="bi bi-clock me-2"></i>Next 24 Hours
+      <!-- Hourly Forecast -->
+      <div class="mb-4">
+        <h4 class="text-center mb-3">
+          <i class="bi bi-clock me-2"></i>24-Hour Forecast
         </h4>
         <div class="hourly-forecast-container">
           <div class="row flex-nowrap overflow-auto" id="hourlyForecast">
@@ -119,36 +113,36 @@
         </div>
       </div>
 
-      <!-- Next 5 Days -->
-      <div class="mb-5">
-        <h4 class="text-center mb-4">
-          <i class="bi bi-calendar-week me-2"></i>Next 5 Days
+      <!-- Daily Forecast -->
+      <div class="mb-4">
+        <h4 class="text-center mb-3">
+          <i class="bi bi-calendar-week me-2"></i>5-Day Forecast
         </h4>
         <div class="row g-3" id="forecastContainer">
           <!-- Forecast cards will be dynamically added here -->
         </div>
       </div>
 
-      <!-- Popular Cities -->
-      <div class="text-center mb-5">
-        <h5 class="mb-4">Popular Cities</h5>
-        <div class="d-flex flex-wrap justify-content-center" id="quickCities">
-          <button class="btn quick-city-btn" data-city="Delhi">Delhi</button>
-          <button class="btn quick-city-btn" data-city="Mumbai">Mumbai</button>
-          <button class="btn quick-city-btn" data-city="London">London</button>
-          <button class="btn quick-city-btn" data-city="New York">New York</button>
-          <button class="btn quick-city-btn" data-city="Tokyo">Tokyo</button>
-          <button class="btn quick-city-btn" data-city="Sydney">Sydney</button>
+      <!-- Quick City Buttons -->
+      <div class="text-center mb-4">
+        <h5 class="mb-3">Quick Access</h5>
+        <div class="d-flex flex-wrap justify-content-center gap-2" id="quickCities">
+          <button class="btn btn-outline-light btn-sm quick-city-btn" data-city="Delhi">Delhi</button>
+          <button class="btn btn-outline-light btn-sm quick-city-btn" data-city="Mumbai">Mumbai</button>
+          <button class="btn btn-outline-light btn-sm quick-city-btn" data-city="Bangalore">Bangalore</button>
+          <button class="btn btn-outline-light btn-sm quick-city-btn" data-city="Chennai">Chennai</button>
+          <button class="btn btn-outline-light btn-sm quick-city-btn" data-city="Kolkata">Kolkata</button>
+          <button class="btn btn-outline-light btn-sm quick-city-btn" data-city="Hyderabad">Hyderabad</button>
         </div>
       </div>
     </div>
 
     <!-- Footer -->
-    <footer class="text-center py-4 mt-5">
+    <footer class="text-center text-white py-3 mt-5">
       <div class="container">
-        <p class="mb-0">
-          <i class="bi bi-cloud-sun me-2"></i>
-          Simple Weather App | Powered by OpenWeatherMap
+        <p class="mb-0 opacity-75">
+          <i class="bi bi-geo-alt me-1"></i>
+          Powered by OpenWeatherMap API | Made with ❤️
         </p>
       </div>
     </footer>
