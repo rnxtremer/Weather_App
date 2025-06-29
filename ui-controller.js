@@ -50,8 +50,14 @@ class UIController {
     });
   }
 
+  /**
+   * STRICT LOCAL ICON MAPPING - NO EXTERNAL CALLS
+   * Maps OpenWeatherMap icon codes to local PNG files only
+   */
   getLocalWeatherIcon(iconCode) {
-    // Map OpenWeatherMap icon codes to local icon files
+    console.log(`🎯 STRICT LOCAL: Mapping icon code "${iconCode}" to local file`);
+    
+    // Complete mapping of all OpenWeatherMap icon codes to local files
     const iconMap = {
       '01d': '01d.png', // clear sky day
       '01n': '01n.png', // clear sky night
@@ -73,39 +79,48 @@ class UIController {
       '50n': '50n.png'  // mist night
     };
 
-    // Return the local icon path or fallback to unknown icon
+    // Get the local icon file or fallback to unknown
     const iconFile = iconMap[iconCode] || 'unknown.png';
-    return `icons/${iconFile}`;
+    const localPath = `icons/${iconFile}`;
+    
+    console.log(`✅ LOCAL ICON: "${iconCode}" → "${localPath}"`);
+    return localPath;
   }
 
+  /**
+   * STRICT LOCAL ICON CREATION - NO EXTERNAL DEPENDENCIES
+   * Creates weather icon HTML using only local PNG files
+   */
   createWeatherIcon(iconCode, condition, description, size = 'large') {
+    // Get the local icon path (NEVER external)
     const iconPath = this.getLocalWeatherIcon(iconCode);
     
-    let iconSize = '';
     let cssClass = 'weather-icon-img';
     
+    // Apply size-specific classes
     switch(size) {
       case 'small':
-        iconSize = 'width="40" height="40"';
         cssClass += ' weather-icon-small';
         break;
       case 'medium':
-        iconSize = 'width="60" height="60"';
         cssClass += ' weather-icon-medium';
         break;
       case 'large':
       default:
-        iconSize = 'width="100" height="100"';
         cssClass += ' weather-icon-large';
         break;
     }
 
-    return `<img src="${iconPath}" 
-                 alt="${description || condition}" 
-                 title="${description || condition}"
-                 ${iconSize}
-                 class="${cssClass}"
-                 onerror="this.src='icons/unknown.png'; console.log('Failed to load icon: ${iconPath}');" />`;
+    // Create the icon HTML with strict local path and fallback
+    const iconHTML = `<img src="${iconPath}" 
+                           alt="${description || condition}" 
+                           title="${description || condition}"
+                           class="${cssClass}"
+                           onerror="this.src='icons/unknown.png'; console.error('❌ ICON LOAD FAILED: ${iconPath}');" 
+                           onload="console.log('✅ ICON LOADED: ${iconPath}');" />`;
+
+    console.log(`🖼️ CREATED LOCAL ICON: ${iconPath} (${size})`);
+    return iconHTML;
   }
 
   showLoader() {
@@ -144,6 +159,8 @@ class UIController {
   updateWeatherDisplay(weatherData) {
     this.currentWeatherData = weatherData;
     const { current, forecast, cityName } = weatherData;
+
+    console.log('🌤️ UPDATING WEATHER DISPLAY - USING STRICT LOCAL ICONS');
 
     this.hideLoader();
     this.elements.weatherContainer.style.display = 'block';
@@ -188,7 +205,7 @@ class UIController {
     const description = current.weather[0].description;
     const icon = current.weather[0].icon;
 
-    console.log('Main weather icon code:', icon); // Debug log
+    console.log('🎯 MAIN WEATHER - Using local icon for:', icon);
 
     this.elements.mainWeatherInfo.innerHTML = `
       <div class="row align-items-center">
@@ -255,6 +272,8 @@ class UIController {
   updateHourlyForecast(forecast) {
     const hourlyData = forecast.list.slice(0, 8); // Next 24 hours (8 * 3-hour intervals)
     
+    console.log('⏰ HOURLY FORECAST - Using local icons for all hours');
+    
     this.elements.hourlyForecast.innerHTML = hourlyData.map(hour => {
       const time = WeatherUtils.formatTime(hour.dt, forecast.city.timezone);
       const temp = WeatherUtils.formatTemperature(hour.main.temp, this.temperatureUnit);
@@ -262,7 +281,7 @@ class UIController {
       const condition = hour.weather[0].main;
       const description = hour.weather[0].description;
 
-      console.log('Hourly forecast icon code:', icon); // Debug log
+      console.log(`⏰ HOURLY ${time} - Local icon: ${icon}`);
 
       return `
         <div class="col-auto">
@@ -299,6 +318,8 @@ class UIController {
     // Get next 5 days
     const days = Object.values(dailyData).slice(0, 5);
     
+    console.log('📅 DAILY FORECAST - Using local icons for all days');
+    
     this.elements.forecastContainer.innerHTML = days.map(day => {
       const dayName = WeatherUtils.getDayName(day.date, day.timezone);
       const minTemp = WeatherUtils.formatTemperature(Math.min(...day.temps), this.temperatureUnit);
@@ -307,7 +328,7 @@ class UIController {
       const condition = day.weather.main;
       const description = day.weather.description;
 
-      console.log('Daily forecast icon code:', icon); // Debug log
+      console.log(`📅 ${dayName} - Local icon: ${icon}`);
 
       return `
         <div class="col-lg-2 col-md-4 col-sm-6">
