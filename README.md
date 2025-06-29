@@ -1,4 +1,4 @@
-# 🌦️ WeatherPro - Advanced Weather App
+# 🌦️ Mausam - Weather App
 
 A responsive weather forecast web application built using **HTML**, **CSS**, **JavaScript**, and **OpenWeatherMap API**. Users can search for current weather conditions by city, and also view data for major Indian cities like Delhi, Mumbai, Kolkata, and Chennai.
 
