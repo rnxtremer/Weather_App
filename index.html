@@ -10,9 +10,14 @@
       href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
       rel="stylesheet"
     />
+    <!-- Bootstrap Icons -->
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css"
+      rel="stylesheet"
+    />
     <!-- Google Fonts -->
     <link
-      href="https://fonts.googleapis.com/css2?family=Poppins&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
       rel="stylesheet"
     />
     <!-- Custom CSS -->
@@ -20,25 +25,52 @@
   </head>
   <body>
     <!-- Navbar -->
-    <nav class="navbar navbar-dark bg-dark p-3">
+    <nav class="navbar navbar-dark bg-dark p-3 shadow-lg">
       <div class="container-fluid">
-        <span class="navbar-brand mb-0 h1">Mausam</span>
-        <form class="d-flex" role="search" id="searchForm">
-          <input
-            class="form-control me-2"
-            type="search"
-            id="cityInput"
-            placeholder="Enter city"
-          />
-          <button class="btn btn-outline-light" type="submit">Search</button>
-        </form>
+        <div class="d-flex align-items-center">
+          <i class="bi bi-cloud-sun-fill text-warning me-2 fs-3"></i>
+          <span class="navbar-brand mb-0 h1">Mausam</span>
+        </div>
+        <div class="d-flex align-items-center">
+          <button class="btn btn-outline-light me-3" id="unitToggle" title="Toggle Temperature Unit">
+            °C
+          </button>
+          <form class="d-flex" role="search" id="searchForm">
+            <div class="input-group">
+              <input
+                class="form-control"
+                type="search"
+                id="cityInput"
+                placeholder="Enter city name..."
+                autocomplete="off"
+              />
+              <button class="btn btn-outline-light" type="submit">
+                <i class="bi bi-search"></i>
+              </button>
+            </div>
+          </form>
+        </div>
       </div>
     </nav>
 
+    <!-- Search Suggestions -->
+    <div class="container">
+      <div id="searchSuggestions" class="search-suggestions"></div>
+    </div>
+
+    <!-- Error Alert -->
+    <div class="container mt-3">
+      <div id="errorAlert" class="alert alert-danger alert-dismissible fade" role="alert" style="display: none;">
+        <i class="bi bi-exclamation-triangle-fill me-2"></i>
+        <span id="errorMessage"></span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+      </div>
+    </div>
+
     <!-- Loader -->
     <div id="loader" class="text-center mt-5" style="display: none">
-      <div class="spinner-border text-light" role="status"></div>
-      <p class="text-white">Fetching weather data...</p>
+      <div class="spinner-border text-light" role="status" style="width: 3rem; height: 3rem;"></div>
+      <p class="text-white mt-3 fs-5">Fetching weather data...</p>
     </div>
 
     <!-- Main Weather Display -->
@@ -47,27 +79,79 @@
       id="weatherContainer"
       style="display: none"
     >
-      <h2 class="text-center mb-4" id="locationTitle">Weather of</h2>
-
-      <!-- Current Weather Row -->
-      <div class="row text-center" id="currentWeather">
-        <!-- Weather info cards (Condition, About, Others) will be added dynamically here -->
+      <!-- Location and Time -->
+      <div class="text-center mb-4">
+        <h2 id="locationTitle" class="mb-2">Weather of</h2>
+        <p id="currentDateTime" class="text-light opacity-75 fs-5"></p>
       </div>
 
-      <!-- Sunrise/Sunset -->
-      <div class="row text-center my-4" id="sunTimes">
-        <!-- Will be inserted by JS -->
+      <!-- Current Weather Highlight -->
+      <div class="row justify-content-center mb-4">
+        <div class="col-lg-8">
+          <div class="card weather-highlight text-center p-4">
+            <div id="mainWeatherInfo">
+              <!-- Main weather info will be inserted here -->
+            </div>
+          </div>
+        </div>
       </div>
 
-      <!-- Forecast -->
-      <h3 class="text-center my-4">10-Day Forecast</h3>
-      <div class="row" id="forecastContainer">
-        <!-- Forecast cards will be dynamically added here -->
+      <!-- Weather Details Grid -->
+      <div class="row g-3 mb-4" id="weatherDetails">
+        <!-- Weather detail cards will be added dynamically here -->
+      </div>
+
+      <!-- Hourly Forecast -->
+      <div class="mb-4">
+        <h4 class="text-center mb-3">
+          <i class="bi bi-clock me-2"></i>24-Hour Forecast
+        </h4>
+        <div class="hourly-forecast-container">
+          <div class="row flex-nowrap overflow-auto" id="hourlyForecast">
+            <!-- Hourly forecast cards will be dynamically added here -->
+          </div>
+        </div>
+      </div>
+
+      <!-- Daily Forecast -->
+      <div class="mb-4">
+        <h4 class="text-center mb-3">
+          <i class="bi bi-calendar-week me-2"></i>5-Day Forecast
+        </h4>
+        <div class="row g-3" id="forecastContainer">
+          <!-- Forecast cards will be dynamically added here -->
+        </div>
+      </div>
+
+      <!-- Quick City Buttons -->
+      <div class="text-center mb-4">
+        <h5 class="mb-3">Quick Access</h5>
+        <div class="d-flex flex-wrap justify-content-center gap-2" id="quickCities">
+          <button class="btn btn-outline-light btn-sm quick-city-btn" data-city="Delhi">Delhi</button>
+          <button class="btn btn-outline-light btn-sm quick-city-btn" data-city="Mumbai">Mumbai</button>
+          <button class="btn btn-outline-light btn-sm quick-city-btn" data-city="Bangalore">Bangalore</button>
+          <button class="btn btn-outline-light btn-sm quick-city-btn" data-city="Chennai">Chennai</button>
+          <button class="btn btn-outline-light btn-sm quick-city-btn" data-city="Kolkata">Kolkata</button>
+          <button class="btn btn-outline-light btn-sm quick-city-btn" data-city="Hyderabad">Hyderabad</button>
+        </div>
       </div>
     </div>
 
+    <!-- Footer -->
+    <footer class="text-center text-white py-3 mt-5">
+      <div class="container">
+        <p class="mb-0 opacity-75">
+          <i class="bi bi-geo-alt me-1"></i>
+          Powered by OpenWeatherMap API | Made with ❤️
+        </p>
+      </div>
+    </footer>
+
     <!-- JS Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="utils.js"></script>
+    <script src="weather-service.js"></script>
+    <script src="ui-controller.js"></script>
     <script src="app.js"></script>
   </body>
 </html>

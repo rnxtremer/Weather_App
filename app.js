@@ -1,186 +1,142 @@
-// app.js
+// app.js - Main application controller
 
-const apiKey = "YOUR_API_KEY"; 
+class WeatherApp {
+  constructor() {
+    this.weatherService = new WeatherService();
+    this.uiController = new UIController();
+    this.currentLocation = null;
+    this.init();
+  }
 
-// DOM Elements
-const searchForm = document.getElementById("searchForm");
-const cityInput = document.getElementById("cityInput");
-const weatherContainer = document.getElementById("weatherContainer");
-const forecastContainer = document.getElementById("forecastContainer");
-const loader = document.getElementById("loader");
-const locationTitle = document.getElementById("locationTitle");
-const body = document.body;
+  async init() {
+    this.bindEvents();
+    await this.loadInitialWeather();
+  }
 
-// On load, get weather by geolocation
-window.onload = () => {
-  if (navigator.geolocation) {
-    navigator.geolocation.getCurrentPosition(
-      (position) => {
-        const { latitude, longitude } = position.coords;
-        fetchWeatherByCoords(latitude, longitude);
-      },
-      () => {
-        fetchWeatherByCity("Delhi");
+  bindEvents() {
+    // Search form submission
+    const searchForm = document.getElementById('searchForm');
+    searchForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const city = document.getElementById('cityInput').value.trim();
+      if (city) {
+        this.searchCity(city);
       }
-    );
-  } else {
-    fetchWeatherByCity("Delhi");
-  }
-};
+    });
 
-searchForm.addEventListener("submit", (e) => {
-  e.preventDefault();
-  const city = cityInput.value.trim();
-  if (city) {
-    fetchWeatherByCity(city);
-  }
-});
-
-function fetchWeatherByCity(city) {
-  loader.style.display = "block";
-  weatherContainer.style.display = "none";
-
-  fetch(
-    `https://api.openweathermap.org/data/2.5/weather?q=${city}&units=metric&appid=${apiKey}`
-  )
-    .then((res) => res.json())
-    .then((data) => {
-      if (data.cod === 200) {
-        fetchWeatherByCoords(data.coord.lat, data.coord.lon, city);
+    // Search input for suggestions
+    const cityInput = document.getElementById('cityInput');
+    const debouncedSearch = WeatherUtils.debounce(async (query) => {
+      if (query.length >= 2) {
+        try {
+          const cities = await this.weatherService.searchCities(query);
+          this.uiController.showSearchSuggestions(cities);
+        } catch (error) {
+          console.error('Error fetching city suggestions:', error);
+        }
       } else {
-        alert("City not found!");
-        loader.style.display = "none";
+        this.uiController.hideSearchSuggestions();
       }
-    })
-    .catch(() => alert("Something went wrong!"));
+    }, 300);
+
+    cityInput.addEventListener('input', (e) => {
+      debouncedSearch(e.target.value);
+    });
+
+    // Clear search suggestions on escape
+    cityInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        this.uiController.hideSearchSuggestions();
+      }
+    });
+  }
+
+  async loadInitialWeather() {
+    this.uiController.showLoader();
+    
+    try {
+      // Try to get user's current location
+      const position = await this.weatherService.getCurrentPosition();
+      await this.fetchWeatherByCoords(position.lat, position.lon);
+    } catch (error) {
+      console.warn('Geolocation failed:', error.message);
+      // Fallback to default city
+      try {
+        await this.searchCity('Delhi');
+      } catch (fallbackError) {
+        this.uiController.showError('Unable to load weather data. Please check your internet connection and try again.');
+      }
+    }
+  }
+
+  async searchCity(cityName) {
+    this.uiController.showLoader();
+    
+    try {
+      const result = await this.weatherService.getWeatherByCity(cityName);
+      await this.fetchWeatherByCoords(result.coords.lat, result.coords.lon, cityName);
+      
+      // Clear search input
+      document.getElementById('cityInput').value = '';
+      this.uiController.hideSearchSuggestions();
+      
+    } catch (error) {
+      console.error('Error searching city:', error);
+      this.uiController.showError(error.message || 'City not found. Please check the spelling and try again.');
+    }
+  }
+
+  async fetchWeatherByCoords(lat, lon, cityName = null) {
+    this.uiController.showLoader();
+    
+    try {
+      const weatherData = await this.weatherService.getCompleteWeatherData(lat, lon, cityName);
+      this.currentLocation = { lat, lon, name: weatherData.cityName };
+      this.uiController.updateWeatherDisplay(weatherData);
+      
+      // Show success notification for manual searches
+      if (cityName) {
+        WeatherUtils.showNotification(`Weather updated for ${weatherData.cityName}`, 'success');
+      }
+      
+    } catch (error) {
+      console.error('Error fetching weather data:', error);
+      this.uiController.showError('Unable to fetch weather data. Please try again later.');
+    }
+  }
+
+  async refreshWeather() {
+    if (this.currentLocation) {
+      await this.fetchWeatherByCoords(
+        this.currentLocation.lat, 
+        this.currentLocation.lon, 
+        this.currentLocation.name
+      );
+      WeatherUtils.showNotification('Weather data refreshed', 'info');
+    }
+  }
 }
 
-function fetchWeatherByCoords(lat, lon, cityName = null) {
-  loader.style.display = "block";
-  weatherContainer.style.display = "none";
-
-  const currentWeatherURL = `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&units=metric&appid=${apiKey}`;
-  const forecastURL = `https://api.openweathermap.org/data/2.5/forecast?lat=${lat}&lon=${lon}&units=metric&appid=${apiKey}`;
-
-  Promise.all([fetch(currentWeatherURL), fetch(forecastURL)])
-    .then(async ([currentRes, forecastRes]) => {
-      const currentData = await currentRes.json();
-      const forecastData = await forecastRes.json();
-      updateUI(currentData, forecastData, cityName);
-    })
-    .catch(() => alert("Error fetching weather data"));
-}
-
-function updateUI(current, forecast, cityName = null) {
-  loader.style.display = "none";
-  weatherContainer.style.display = "block";
-
-  const name = cityName || current.name;
-  locationTitle.innerHTML = `Weather of <strong>${name}</strong>`;
-
-  const weatherIcon = current.weather[0].icon;
-  const temp = Math.round(current.main.temp);
-  const feelsLike = Math.round(current.main.feels_like);
-  const humidity = current.main.humidity;
-  const pressure = current.main.pressure;
-  const windSpeed = current.wind.speed;
-  const sunrise = new Date(current.sys.sunrise * 1000).toLocaleTimeString();
-  const sunset = new Date(current.sys.sunset * 1000).toLocaleTimeString();
-
-  document.getElementById("currentWeather").innerHTML = `
-    <div class="col-md-4">
-      <div class="card text-center">
-        <div class="card-header">Condition</div>
-        <div class="card-body">
-          <img src="http://openweathermap.org/img/wn/${weatherIcon}@2x.png" alt="icon" />
-          <h4>${temp}&deg;C</h4>
-          <p>Feels like: ${feelsLike}&deg;C</p>
-          <p>Humidity: ${humidity}%</p>
-          <p>Pressure: ${pressure} hPa</p>
-        </div>
-      </div>
-    </div>
-
-    <div class="col-md-4">
-      <div class="card text-center">
-        <div class="card-header">Sun Times</div>
-        <div class="card-body">
-          <p>Sunrise: ${sunrise}</p>
-          <p>Sunset: ${sunset}</p>
-          <p>Wind Speed: ${windSpeed} km/h</p>
-        </div>
-      </div>
-    </div>
-
-    <div class="col-md-4">
-      <div class="card text-center">
-        <div class="card-header">Location Info</div>
-        <div class="card-body">
-          <p>Latitude: ${current.coord.lat}</p>
-          <p>Longitude: ${current.coord.lon}</p>
-          <p>Country: ${current.sys.country}</p>
-        </div>
-      </div>
-    </div>
-  `;
-
-  // Update Background
-  setBackground(current.weather[0].main.toLowerCase());
-
-  // 10 Day Forecast (actually 5 days x 8 = 40 entries, 1 every 3hr)
-  forecastContainer.innerHTML = "";
-  const dailyData = {};
-  forecast.list.forEach((entry) => {
-    const date = entry.dt_txt.split(" ")[0];
-    if (!dailyData[date]) {
-      dailyData[date] = entry;
+// Initialize the app when DOM is loaded
+document.addEventListener('DOMContentLoaded', () => {
+  window.app = new WeatherApp();
+  
+  // Add refresh functionality (optional)
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'F5' || (e.ctrlKey && e.key === 'r')) {
+      e.preventDefault();
+      if (window.app) {
+        window.app.refreshWeather();
+      }
     }
   });
+});
 
-  Object.keys(dailyData)
-    .slice(0, 10)
-    .forEach((date) => {
-      const dayData = dailyData[date];
-      const icon = dayData.weather[0].icon;
-      const temp = Math.round(dayData.main.temp);
-      const condition = dayData.weather[0].main;
+// Handle online/offline status
+window.addEventListener('online', () => {
+  WeatherUtils.showNotification('Connection restored', 'success');
+});
 
-      forecastContainer.innerHTML += `
-      <div class="col-md-2">
-        <div class="card text-center">
-          <div class="card-body">
-            <p>${date}</p>
-            <img src="http://openweathermap.org/img/wn/${icon}.png" alt="icon" />
-            <h5>${temp}&deg;C</h5>
-            <p>${condition}</p>
-          </div>
-        </div>
-      </div>
-    `;
-    });
-}
-
-function setBackground(condition) {
-  let image = "";
-  switch (condition) {
-    case "clear":
-      image = "url('images/clear.jpg')";
-      break;
-    case "clouds":
-      image = "url('images/clouds.jpg')";
-      break;
-    case "rain":
-      image = "url('images/rain.jpg')";
-      break;
-    case "snow":
-      image = "url('images/snow.jpg')";
-      break;
-    case "mist":
-    case "haze":
-      image = "url('images/mist.jpg')";
-      break;
-    default:
-      image = "url('images/default.jpg')";
-  }
-  document.body.style.backgroundImage = image;
-}
+window.addEventListener('offline', () => {
+  WeatherUtils.showNotification('No internet connection', 'warning');
+});
