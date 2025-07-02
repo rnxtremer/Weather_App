@@ -33,6 +33,3 @@ A responsive weather forecast web application built using **HTML**, **CSS**, **J
 - **Unit Conversion**: Toggle between Celsius/Fahrenheit and km/h/mph
 - **Offline Icons**: All weather icons work offline using local PNG files
 
-## 🌟 Made by rnXtremer
-
-This weather app showcases modern web development practices with a focus on user experience and performance.
